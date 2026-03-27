@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>wnet - Hinário Mobile</title>
+    <style>
+        :root {
+            --bg: #f2f2f7;
+            --accent: #007aff;
+            --card: #ffffff;
+            --text: #000000;
+            --secondary: #8e8e93;
+            --btn-gray: #e5e5ea;
+        }
+        body { 
+            font-family: -apple-system, system-ui, sans-serif; 
+            background: var(--bg); color: var(--text); 
+            margin: 0; padding: 0; overflow-x: hidden;
+        }
+        .app { width: 100%; min-height: 100vh; display: flex; flex-direction: column; }
+        
+        .card { background: var(--card); border-radius: 20px; padding: 20px; margin: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+
+        /* TELA INICIAL */
+        #homeScreen { text-align: center; margin-top: 15vh; }
+        .logo { font-weight: 700; color: var(--accent); font-size: 11px; letter-spacing: 2px; text-transform: uppercase; }
+        .search-box { 
+            width: 100%; border: none; background: var(--btn-gray); padding: 20px;
+            border-radius: 15px; font-size: 24px; text-align: center; outline: none; margin-top: 20px;
+        }
+
+        /* TELA DO HINO */
+        #hinoScreen { display: none; padding-bottom: 120px; }
+        .header-hino { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .btn-back { background: none; border: none; color: var(--accent); font-size: 18px; font-weight: 500; cursor: pointer; }
+        
+        /* SELETOR DE TONS */
+        .tone-grid { 
+            display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; 
+            margin-bottom: 15px; border-bottom: 0.5px solid #d1d1d6; padding-bottom: 15px;
+        }
+        .tone-btn { 
+            background: var(--btn-gray); border: none; padding: 10px 0;
+            border-radius: 8px; font-weight: 600; font-size: 13px; color: var(--text);
+        }
+        .tone-btn.active { background: var(--accent); color: white; }
+
+        /* ÁREA DA CIFRA */
+        .cifra-container { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        .cifra-content { 
+            white-space: pre; font-family: "SF Mono", "Menlo", monospace; 
+            font-size: 14px; line-height: 1.6; letter-spacing: -0.3px;
+        }
+        .chord { color: var(--accent); font-weight: bold; }
+
+        /* CONTROLES DE ROLAGEM (FLOATING) */
+        .scroll-controls {
+            position: fixed; bottom: 20px; left: 10px; right: 10px;
+            background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(15px);
+            border-radius: 20px; padding: 15px; border: 1px solid rgba(0,0,0,0.1);
+            display: flex; align-items: center; justify-content: space-between; gap: 10px;
+        }
+        .scroll-btn { background: var(--accent); color: white; border: none; padding: 10px 15px; border-radius: 10px; font-weight: bold; }
+        .speed-label { font-size: 12px; font-weight: bold; color: var(--secondary); }
+        input[type=range] { flex-grow: 1; accent-color: var(--accent); }
+    </style>
+</head>
+<body>
+
+<div class="app">
+    <div id="homeScreen" class="card">
+        <div class="logo">wnet systems</div>
+        <h1 style="letter-spacing: -1px;">Hinário</h1>
+        <input type="number" id="numInput" class="search-box" placeholder="Nº do hino" oninput="buscarHino()">
+    </div>
+
+    <div id="hinoScreen">
+        <div class="card">
+            <div class="header-hino">
+                <button class="btn-back" onclick="voltar()">‹ Voltar</button>
+                <div id="hinoNumero" style="color: var(--secondary); font-size: 14px;"></div>
+            </div>
+            <h2 id="hinoTitulo" style="margin: 0 0 15px 0; font-size: 20px;"></h2>
+            
+            <div class="tone-grid" id="toneSelector"></div>
+
+            <div class="cifra-container">
+                <div class="cifra-content" id="cifraRender"></div>
+            </div>
+        </div>
+
+        <div class="scroll-controls">
+            <button id="scrollToggle" class="scroll-btn" onclick="toggleScroll()">PLAY</button>
+            <span class="speed-label">Velocidade</span>
+            <input type="range" id="scrollSpeed" min="1" max="10" value="2">
+        </div>
+    </div>
+</div>
+
+<script>
+    const BANCO_DE_DADOS = {
+        "1": { titulo: "Grandioso és Tu", tomOriginal: "G", letra: `G               C               G\nSenhor meu Deus, quando eu maravilhado\n           D      D7           G   D7\nFico a pensar nas obras de Tuas mãos` },
+        "15": { titulo: "Foi na Cruz", tomOriginal: "E", letra: `E               A               E\nOh! quão cego andei e perdido busquei` }
+    };
+
+    // Notas Naturais e Tons Menores pedidos
+    const notasDisplay = ["C", "D", "E", "F", "G", "A", "B", "Cm", "Dm", "Em", "Fm", "Gm", "Am", "Bm"];
+    const notasEscala = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+    
+    let hinoAtual = null;
+    let offsetAtual = 0;
+    let scrollInterval = null;
+    let isScrolling = false;
+
+    // Criar botões de tom
+    const selector = document.getElementById('toneSelector');
+    notasDisplay.forEach((nota) => {
+        let btn = document.createElement('button');
+        btn.className = 'tone-btn';
+        btn.innerText = nota;
+        btn.onclick = () => mudarTom(nota);
+        btn.id = `btn-tom-${nota}`;
+        selector.appendChild(btn);
+    });
+
+    function buscarHino() {
+        const num = document.getElementById('numInput').value;
+        if (BANCO_DE_DADOS[num]) abrirHino(num);
+    }
+
+    function abrirHino(num) {
+        hinoAtual = BANCO_DE_DADOS[num];
+        offsetAtual = 0;
+        document.getElementById('homeScreen').style.display = 'none';
+        document.getElementById('hinoScreen').style.display = 'block';
+        document.getElementById('hinoNumero').innerText = `Hino ${num}`;
+        document.getElementById('hinoTitulo').innerText = hinoAtual.titulo;
+        mudarTom(hinoAtual.tomOriginal);
+    }
+
+    function voltar() {
+        stopScroll();
+        document.getElementById('homeScreen').style.display = 'block';
+        document.getElementById('hinoScreen').style.display = 'none';
+        document.getElementById('numInput').value = '';
+    }
+
+    function mudarTom(notaEscolhida) {
+        // Pega apenas a nota base (ex: Am vira A)
+        let notaBaseOriginal = hinoAtual.tomOriginal.replace(/m|dim|sus/g, '');
+        let notaBaseEscolhida = notaEscolhida.replace(/m|dim|sus/g, '');
+        
+        offsetAtual = notasEscala.indexOf(notaBaseEscolhida) - notasEscala.indexOf(notaBaseOriginal);
+        
+        document.querySelectorAll('.tone-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(`btn-tom-${notaEscolhida}`).classList.add('active');
+        renderizarCifra();
+    }
+
+    function transporNota(nota, semitons) {
+        return nota.replace(/[CDEFGAB][#b]?/g, (match) => {
+            let index = notasEscala.indexOf(match.replace('b', ''));
+            if (index === -1) return match;
+            return notasEscala[(index + semitons + 12) % 12];
+        });
+    }
+
+    function renderizarCifra() {
+        const linhas = hinoAtual.letra.split('\n');
+        const resultado = linhas.map(linha => {
+            const eLinhaDeCifra = /^\s*([CDEFGAB][#b]?[a-zA-Z0-9/+#]*\s*)+$/.test(linha);
+            if (eLinhaDeCifra) {
+                return linha.replace(/[CDEFGAB][#b]?[a-zA-Z0-9/+#]*/g, (nota) => {
+                    return `<span class="chord">${transporNota(nota, offsetAtual)}</span>`;
+                });
+            }
+            return linha;
+        }).join('\n');
+        document.getElementById('cifraRender').innerHTML = resultado;
+    }
+
+    // LÓGICA DE ROLAGEM
+    function toggleScroll() {
+        if (isScrolling) {
+            stopScroll();
+        } else {
+            startScroll();
+        }
+    }
+
+    function startScroll() {
+        isScrolling = true;
+        document.getElementById('scrollToggle').innerText = "STOP";
+        document.getElementById('scrollToggle').style.background = "#ff3b30";
+        
+        scrollInterval = setInterval(() => {
+            const speed = document.getElementById('scrollSpeed').value;
+            window.scrollBy(0, speed / 2);
+        }, 50);
+    }
+
+    function stopScroll() {
+        isScrolling = false;
+        clearInterval(scrollInterval);
+        document.getElementById('scrollToggle').innerText = "PLAY";
+        document.getElementById('scrollToggle').style.background = "#007aff";
+    }
+</script>
+</body>
+</html>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>wnet - Hinário Mobile Pro</title>
+    <title>Hinário Cifrado Pro</title>
     <style>
         :root {
             --bg: #f2f2f7;
@@ -13,6 +13,7 @@
             --secondary: #8e8e93;
             --btn-gray: #e5e5ea;
             --danger: #ff3b30;
+            --glass: rgba(255, 255, 255, 0.9);
         }
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
@@ -24,10 +25,26 @@
         
         .card { background: var(--card); border-radius: 20px; padding: 20px; margin: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
 
-        /* TELA INICIAL - 3 BOLINHAS FIXAS */
-        #homeScreen { text-align: center; padding-top: 5vh; }
-        .logo { font-weight: 700; color: var(--accent); font-size: 11px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 20px; }
+        #homeScreen { text-align: center; padding-top: 8vh; }
         
+        .titulo-animado {
+            margin: 0 0 10px 0; 
+            letter-spacing: -1.5px;
+            font-size: 38px;
+            font-weight: 900;
+            display: inline-block;
+            background: linear-gradient(120deg, #1c1c1e 30%, #007aff 50%, #1c1c1e 70%);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: shine 3s ease-in-out infinite;
+        }
+
+        @keyframes shine {
+            0% { background-position: 100% center; }
+            100% { background-position: -100% center; }
+        }
+
         .number-display {
             display: flex; justify-content: center; gap: 15px; margin: 30px 0; min-height: 80px;
         }
@@ -40,7 +57,6 @@
         }
         .digit-circle.active { border-color: var(--accent); box-shadow: 0 0 15px rgba(0,122,255,0.2); color: var(--accent); }
 
-        /* TECLADO NUMÉRICO AJUSTADO */
         .keypad {
             display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
             max-width: 320px; margin: 0 auto; padding: 10px;
@@ -53,50 +69,58 @@
         .key:active { background: var(--btn-gray); transform: scale(0.95); }
         .key.action { font-size: 14px; font-weight: 800; text-transform: uppercase; }
 
-        /* TELA DO HINO */
         #hinoScreen { display: none; padding-bottom: 140px; }
-        .header-hino { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .header-hino { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .btn-back { background: var(--btn-gray); border: none; color: var(--text); padding: 8px 15px; border-radius: 10px; font-weight: 600; cursor: pointer; }
         
-        .tone-grid { 
-            display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; 
-            margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 15px;
+        /* ESTILO DO BOTÃO DE TOM SELECIONADO */
+        .tone-selector-container { position: relative; display: inline-block; }
+        .current-tone-btn {
+            background: var(--accent); color: white; border: none;
+            padding: 8px 16px; border-radius: 10px; font-weight: 700;
+            font-size: 14px; display: flex; align-items: center; gap: 8px;
         }
-        .tone-btn { 
-            background: var(--btn-gray); border: none; padding: 8px 0;
-            border-radius: 6px; font-weight: 600; font-size: 11px; color: var(--text);
-        }
-        .tone-btn.active { background: var(--accent); color: white; }
 
-        .cifra-container { overflow-x: auto; background: #fafafa; border-radius: 10px; padding: 10px; }
+        /* CARD FLUTUANTE DE TONS */
+        .tone-card {
+            display: none; position: absolute; top: 45px; right: 0;
+            background: var(--glass); backdrop-filter: blur(20px);
+            width: 220px; padding: 15px; border-radius: 18px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15); border: 1px solid rgba(255,255,255,0.3);
+            z-index: 100; grid-template-columns: repeat(4, 1fr); gap: 8px;
+        }
+        .tone-card.show { display: grid; }
+        .tone-mini-btn {
+            background: var(--btn-gray); border: none; padding: 10px 0;
+            border-radius: 8px; font-weight: 600; font-size: 12px; color: var(--text);
+        }
+        .tone-mini-btn.active { background: var(--accent); color: white; }
+
+        .cifra-container { overflow-x: auto; background: #fafafa; border-radius: 10px; padding: 15px; margin-top: 10px; }
         .cifra-content { 
-            white-space: pre; font-family: "SF Mono", "Menlo", monospace; 
-            font-size: 15px; line-height: 1.8; color: #333;
+            white-space: pre-wrap; word-wrap: break-word;
+            font-family: "SF Mono", "Menlo", monospace; 
+            font-size: 15px; line-height: 2.2; color: #333;
         }
         .chord { color: var(--accent); font-weight: bold; }
 
-        /* CONTROLES DE ROLAGEM */
         .scroll-controls {
             position: fixed; bottom: 25px; left: 15px; right: 15px;
             background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(20px);
             border-radius: 25px; padding: 15px 20px; border: 1px solid rgba(0,0,0,0.08);
             display: flex; align-items: center; gap: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);
         }
-        .scroll-btn { 
-            background: var(--accent); color: white; border: none; 
-            width: 60px; height: 60px; border-radius: 50%; font-weight: 800; 
-        }
+        .scroll-btn { background: var(--accent); color: white; border: none; width: 60px; height: 60px; border-radius: 50%; font-weight: 800; }
         .speed-control { flex-grow: 1; display: flex; flex-direction: column; }
         .speed-label { font-size: 11px; text-transform: uppercase; color: var(--secondary); margin-bottom: 5px; }
-        input[type=range] { width: 100%; accent-color: var(--accent); }
+        input[type=range] { width: 100%; accent-color: var(--accent); cursor: pointer; }
     </style>
 </head>
 <body>
 
 <div class="app">
     <div id="homeScreen">
-        <div class="logo">wnet systems</div>
-        <h1 style="margin:0; letter-spacing: -1px;">Hinário</h1>
+        <h1 class="titulo-animado">Hinário Cifrado</h1>
         
         <div class="number-display" id="dotsContainer">
             <div class="digit-circle" id="dot0"></div>
@@ -114,7 +138,7 @@
             <button class="key" onclick="pressKey('7')">7</button>
             <button class="key" onclick="pressKey('8')">8</button>
             <button class="key" onclick="pressKey('9')">9</button>
-            <button class="key action" style="color: var(--danger)" onclick="clearKeys()">APAGAR</button>
+            <button class="key action" style="color: var(--danger)" onclick="deleteLastKey()">APAGAR</button>
             <button class="key" onclick="pressKey('0')">0</button>
             <button class="key action" style="color: var(--accent)" onclick="abrirHinoManual()">ABRIR</button>
         </div>
@@ -124,11 +148,17 @@
         <div class="card">
             <div class="header-hino">
                 <button class="btn-back" onclick="voltar()">‹ Sair</button>
-                <div id="hinoNumero" style="font-weight: bold; color: var(--accent);"></div>
+                
+                <div class="tone-selector-container">
+                    <button class="current-tone-btn" onclick="toggleToneCard()">
+                        TOM: <span id="currentToneLabel">-</span> ▾
+                    </button>
+                    <div id="toneCard" class="tone-card"></div>
+                </div>
             </div>
-            <h2 id="hinoTitulo" style="margin: 0 0 15px 0; font-size: 22px;"></h2>
-            
-            <div class="tone-grid" id="toneSelector"></div>
+
+            <div id="hinoNumero" style="font-weight: 800; font-size: 12px; color: var(--secondary); margin-bottom: 5px; letter-spacing: 1px;"></div>
+            <h2 id="hinoTitulo" style="margin: 0 0 15px 0; font-size: 24px; font-weight: 800;"></h2>
 
             <div class="cifra-container">
                 <div class="cifra-content" id="cifraRender"></div>
@@ -139,7 +169,7 @@
             <button id="scrollToggle" class="scroll-btn" onclick="toggleScroll()">PLAY</button>
             <div class="speed-control">
                 <span class="speed-label">Velocidade</span>
-                <input type="range" id="scrollSpeed" min="0.2" max="5" step="0.1" value="1">
+                <input type="range" id="scrollSpeed" min="0" max="3" step="0.001" value="0.2">
             </div>
         </div>
     </div>
@@ -158,20 +188,36 @@
     let offsetAtual = 0;
     let isScrolling = false;
     let currentInput = "";
-    let scrollAnimationFrame;
+    let scrollPos = 0;
 
-    // Gerar botões de tom
-    const selector = document.getElementById('toneSelector');
+    // GERAR OS BOTÕES DENTRO DO CARD DE TOM
+    const toneCard = document.getElementById('toneCard');
     notasDisplay.forEach((nota) => {
         let btn = document.createElement('button');
-        btn.className = 'tone-btn';
+        btn.className = 'tone-mini-btn';
         btn.innerText = nota;
-        btn.onclick = () => mudarTom(nota);
+        btn.onclick = (e) => {
+            e.stopPropagation();
+            mudarTom(nota);
+            toggleToneCard(); // Fecha o card após selecionar
+        };
         btn.id = `btn-tom-${nota}`;
-        selector.appendChild(btn);
+        toneCard.appendChild(btn);
     });
 
-    // ATUALIZAÇÃO DAS 3 BOLINHAS
+    function toggleToneCard() {
+        toneCard.classList.toggle('show');
+    }
+
+    // Fecha o card se clicar fora
+    window.onclick = function(event) {
+        if (!event.target.matches('.current-tone-btn')) {
+            if (toneCard.classList.contains('show')) {
+                toneCard.classList.remove('show');
+            }
+        }
+    }
+
     function updateDots() {
         for(let i=0; i<3; i++) {
             const dot = document.getElementById(`dot${i}`);
@@ -192,19 +238,19 @@
         }
     }
 
-    function clearKeys() {
-        currentInput = "";
+    function deleteLastKey() {
+        currentInput = currentInput.slice(0, -1);
         updateDots();
     }
 
     function abrirHinoManual() {
-        const num = parseInt(currentInput).toString(); // Remove zeros à esquerda se houver
+        const num = parseInt(currentInput).toString(); 
         if (BANCO_DE_DADOS[num]) {
             abrirHino(num);
-        } else if (currentInput === "") {
-            alert("Digite o número do hino.");
         } else {
-            alert("Hino " + currentInput + " não encontrado!");
+            alert("Hino não encontrado!");
+            currentInput = ""; 
+            updateDots();
         }
     }
 
@@ -216,6 +262,7 @@
         document.getElementById('hinoNumero').innerText = `HINO ${num}`;
         document.getElementById('hinoTitulo').innerText = hinoAtual.titulo;
         mudarTom(hinoAtual.tomOriginal);
+        scrollPos = 0;
         window.scrollTo(0,0);
     }
 
@@ -223,14 +270,17 @@
         stopScroll();
         document.getElementById('homeScreen').style.display = 'block';
         document.getElementById('hinoScreen').style.display = 'none';
-        clearKeys();
+        currentInput = "";
+        updateDots();
     }
 
     function mudarTom(notaEscolhida) {
         let notaBaseOriginal = hinoAtual.tomOriginal.replace(/m|dim|sus/g, '');
         let notaBaseEscolhida = notaEscolhida.replace(/m|dim|sus/g, '');
-        offsetAtual = notasEscala.indexOf(notaBaseEscolhida) - notasEscala.indexOf(notaBaseOriginal);
-        document.querySelectorAll('.tone-btn').forEach(b => b.classList.remove('active'));
+        offsetAtual = (notasEscala.indexOf(notaBaseEscolhida) - notasEscala.indexOf(notaBaseOriginal) + 12) % 12;
+        
+        document.getElementById('currentToneLabel').innerText = notaEscolhida;
+        document.querySelectorAll('.tone-mini-btn').forEach(b => b.classList.remove('active'));
         const btn = document.getElementById(`btn-tom-${notaEscolhida}`);
         if(btn) btn.classList.add('active');
         renderizarCifra();
@@ -261,8 +311,14 @@
     function stepScroll() {
         if (!isScrolling) return;
         const speed = parseFloat(document.getElementById('scrollSpeed').value);
-        window.scrollBy(0, speed);
-        scrollAnimationFrame = requestAnimationFrame(stepScroll);
+        if (speed > 0) {
+            scrollPos += speed;
+            if (scrollPos >= 1) {
+                window.scrollBy(0, Math.floor(scrollPos));
+                scrollPos -= Math.floor(scrollPos);
+            }
+        }
+        requestAnimationFrame(stepScroll);
     }
 
     function toggleScroll() {
@@ -272,13 +328,13 @@
             isScrolling = true;
             document.getElementById('scrollToggle').innerText = "STOP";
             document.getElementById('scrollToggle').style.background = "var(--danger)";
+            scrollPos = 0;
             stepScroll();
         }
     }
 
     function stopScroll() {
         isScrolling = false;
-        cancelAnimationFrame(scrollAnimationFrame);
         document.getElementById('scrollToggle').innerText = "PLAY";
         document.getElementById('scrollToggle').style.background = "var(--accent)";
     }

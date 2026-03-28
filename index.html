@@ -3,85 +3,130 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>wnet - Hinário Mobile</title>
+    <title>wnet - Hinário Mobile Pro</title>
     <style>
         :root {
             --bg: #f2f2f7;
             --accent: #007aff;
             --card: #ffffff;
-            --text: #000000;
+            --text: #1c1c1e;
             --secondary: #8e8e93;
             --btn-gray: #e5e5ea;
+            --danger: #ff3b30;
         }
         body { 
-            font-family: -apple-system, system-ui, sans-serif; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
             background: var(--bg); color: var(--text); 
             margin: 0; padding: 0; overflow-x: hidden;
+            user-select: none;
         }
         .app { width: 100%; min-height: 100vh; display: flex; flex-direction: column; }
         
-        .card { background: var(--card); border-radius: 20px; padding: 20px; margin: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .card { background: var(--card); border-radius: 20px; padding: 20px; margin: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
 
-        /* TELA INICIAL */
-        #homeScreen { text-align: center; margin-top: 15vh; }
-        .logo { font-weight: 700; color: var(--accent); font-size: 11px; letter-spacing: 2px; text-transform: uppercase; }
-        .search-box { 
-            width: 100%; border: none; background: var(--btn-gray); padding: 20px;
-            border-radius: 15px; font-size: 24px; text-align: center; outline: none; margin-top: 20px;
+        /* TELA INICIAL - 3 BOLINHAS FIXAS */
+        #homeScreen { text-align: center; padding-top: 5vh; }
+        .logo { font-weight: 700; color: var(--accent); font-size: 11px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 20px; }
+        
+        .number-display {
+            display: flex; justify-content: center; gap: 15px; margin: 30px 0; min-height: 80px;
         }
+        .digit-circle {
+            width: 65px; height: 65px; border-radius: 50%;
+            background: #fff; border: 2px solid #d1d1d6;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 32px; font-weight: bold; color: var(--text);
+            transition: all 0.2s ease;
+        }
+        .digit-circle.active { border-color: var(--accent); box-shadow: 0 0 15px rgba(0,122,255,0.2); color: var(--accent); }
+
+        /* TECLADO NUMÉRICO AJUSTADO */
+        .keypad {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+            max-width: 320px; margin: 0 auto; padding: 10px;
+        }
+        .key {
+            background: var(--card); border: none; height: 65px; border-radius: 15px;
+            font-size: 18px; font-weight: 600; color: var(--text);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: transform 0.1s;
+        }
+        .key:active { background: var(--btn-gray); transform: scale(0.95); }
+        .key.action { font-size: 14px; font-weight: 800; text-transform: uppercase; }
 
         /* TELA DO HINO */
-        #hinoScreen { display: none; padding-bottom: 120px; }
+        #hinoScreen { display: none; padding-bottom: 140px; }
         .header-hino { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .btn-back { background: none; border: none; color: var(--accent); font-size: 18px; font-weight: 500; cursor: pointer; }
+        .btn-back { background: var(--btn-gray); border: none; color: var(--text); padding: 8px 15px; border-radius: 10px; font-weight: 600; cursor: pointer; }
         
-        /* SELETOR DE TONS */
         .tone-grid { 
-            display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; 
-            margin-bottom: 15px; border-bottom: 0.5px solid #d1d1d6; padding-bottom: 15px;
+            display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; 
+            margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 15px;
         }
         .tone-btn { 
-            background: var(--btn-gray); border: none; padding: 10px 0;
-            border-radius: 8px; font-weight: 600; font-size: 13px; color: var(--text);
+            background: var(--btn-gray); border: none; padding: 8px 0;
+            border-radius: 6px; font-weight: 600; font-size: 11px; color: var(--text);
         }
         .tone-btn.active { background: var(--accent); color: white; }
 
-        /* ÁREA DA CIFRA */
-        .cifra-container { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        .cifra-container { overflow-x: auto; background: #fafafa; border-radius: 10px; padding: 10px; }
         .cifra-content { 
             white-space: pre; font-family: "SF Mono", "Menlo", monospace; 
-            font-size: 14px; line-height: 1.6; letter-spacing: -0.3px;
+            font-size: 15px; line-height: 1.8; color: #333;
         }
         .chord { color: var(--accent); font-weight: bold; }
 
-        /* CONTROLES DE ROLAGEM (FLOATING) */
+        /* CONTROLES DE ROLAGEM */
         .scroll-controls {
-            position: fixed; bottom: 20px; left: 10px; right: 10px;
-            background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(15px);
-            border-radius: 20px; padding: 15px; border: 1px solid rgba(0,0,0,0.1);
-            display: flex; align-items: center; justify-content: space-between; gap: 10px;
+            position: fixed; bottom: 25px; left: 15px; right: 15px;
+            background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(20px);
+            border-radius: 25px; padding: 15px 20px; border: 1px solid rgba(0,0,0,0.08);
+            display: flex; align-items: center; gap: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);
         }
-        .scroll-btn { background: var(--accent); color: white; border: none; padding: 10px 15px; border-radius: 10px; font-weight: bold; }
-        .speed-label { font-size: 12px; font-weight: bold; color: var(--secondary); }
-        input[type=range] { flex-grow: 1; accent-color: var(--accent); }
+        .scroll-btn { 
+            background: var(--accent); color: white; border: none; 
+            width: 60px; height: 60px; border-radius: 50%; font-weight: 800; 
+        }
+        .speed-control { flex-grow: 1; display: flex; flex-direction: column; }
+        .speed-label { font-size: 11px; text-transform: uppercase; color: var(--secondary); margin-bottom: 5px; }
+        input[type=range] { width: 100%; accent-color: var(--accent); }
     </style>
 </head>
 <body>
 
 <div class="app">
-    <div id="homeScreen" class="card">
+    <div id="homeScreen">
         <div class="logo">wnet systems</div>
-        <h1 style="letter-spacing: -1px;">Hinário</h1>
-        <input type="number" id="numInput" class="search-box" placeholder="Nº do hino" oninput="buscarHino()">
+        <h1 style="margin:0; letter-spacing: -1px;">Hinário</h1>
+        
+        <div class="number-display" id="dotsContainer">
+            <div class="digit-circle" id="dot0"></div>
+            <div class="digit-circle" id="dot1"></div>
+            <div class="digit-circle" id="dot2"></div>
+        </div>
+
+        <div class="keypad">
+            <button class="key" onclick="pressKey('1')">1</button>
+            <button class="key" onclick="pressKey('2')">2</button>
+            <button class="key" onclick="pressKey('3')">3</button>
+            <button class="key" onclick="pressKey('4')">4</button>
+            <button class="key" onclick="pressKey('5')">5</button>
+            <button class="key" onclick="pressKey('6')">6</button>
+            <button class="key" onclick="pressKey('7')">7</button>
+            <button class="key" onclick="pressKey('8')">8</button>
+            <button class="key" onclick="pressKey('9')">9</button>
+            <button class="key action" style="color: var(--danger)" onclick="clearKeys()">APAGAR</button>
+            <button class="key" onclick="pressKey('0')">0</button>
+            <button class="key action" style="color: var(--accent)" onclick="abrirHinoManual()">ABRIR</button>
+        </div>
     </div>
 
     <div id="hinoScreen">
         <div class="card">
             <div class="header-hino">
-                <button class="btn-back" onclick="voltar()">‹ Voltar</button>
-                <div id="hinoNumero" style="color: var(--secondary); font-size: 14px;"></div>
+                <button class="btn-back" onclick="voltar()">‹ Sair</button>
+                <div id="hinoNumero" style="font-weight: bold; color: var(--accent);"></div>
             </div>
-            <h2 id="hinoTitulo" style="margin: 0 0 15px 0; font-size: 20px;"></h2>
+            <h2 id="hinoTitulo" style="margin: 0 0 15px 0; font-size: 22px;"></h2>
             
             <div class="tone-grid" id="toneSelector"></div>
 
@@ -92,8 +137,10 @@
 
         <div class="scroll-controls">
             <button id="scrollToggle" class="scroll-btn" onclick="toggleScroll()">PLAY</button>
-            <span class="speed-label">Velocidade</span>
-            <input type="range" id="scrollSpeed" min="1" max="10" value="2">
+            <div class="speed-control">
+                <span class="speed-label">Velocidade</span>
+                <input type="range" id="scrollSpeed" min="0.2" max="5" step="0.1" value="1">
+            </div>
         </div>
     </div>
 </div>
@@ -104,16 +151,16 @@
         "15": { titulo: "Foi na Cruz", tomOriginal: "E", letra: `E               A               E\nOh! quão cego andei e perdido busquei` }
     };
 
-    // Notas Naturais e Tons Menores pedidos
     const notasDisplay = ["C", "D", "E", "F", "G", "A", "B", "Cm", "Dm", "Em", "Fm", "Gm", "Am", "Bm"];
     const notasEscala = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
     
     let hinoAtual = null;
     let offsetAtual = 0;
-    let scrollInterval = null;
     let isScrolling = false;
+    let currentInput = "";
+    let scrollAnimationFrame;
 
-    // Criar botões de tom
+    // Gerar botões de tom
     const selector = document.getElementById('toneSelector');
     notasDisplay.forEach((nota) => {
         let btn = document.createElement('button');
@@ -124,9 +171,41 @@
         selector.appendChild(btn);
     });
 
-    function buscarHino() {
-        const num = document.getElementById('numInput').value;
-        if (BANCO_DE_DADOS[num]) abrirHino(num);
+    // ATUALIZAÇÃO DAS 3 BOLINHAS
+    function updateDots() {
+        for(let i=0; i<3; i++) {
+            const dot = document.getElementById(`dot${i}`);
+            if (currentInput[i]) {
+                dot.innerText = currentInput[i];
+                dot.classList.add('active');
+            } else {
+                dot.innerText = "";
+                dot.classList.remove('active');
+            }
+        }
+    }
+
+    function pressKey(key) {
+        if (currentInput.length < 3) {
+            currentInput += key;
+            updateDots();
+        }
+    }
+
+    function clearKeys() {
+        currentInput = "";
+        updateDots();
+    }
+
+    function abrirHinoManual() {
+        const num = parseInt(currentInput).toString(); // Remove zeros à esquerda se houver
+        if (BANCO_DE_DADOS[num]) {
+            abrirHino(num);
+        } else if (currentInput === "") {
+            alert("Digite o número do hino.");
+        } else {
+            alert("Hino " + currentInput + " não encontrado!");
+        }
     }
 
     function abrirHino(num) {
@@ -134,27 +213,26 @@
         offsetAtual = 0;
         document.getElementById('homeScreen').style.display = 'none';
         document.getElementById('hinoScreen').style.display = 'block';
-        document.getElementById('hinoNumero').innerText = `Hino ${num}`;
+        document.getElementById('hinoNumero').innerText = `HINO ${num}`;
         document.getElementById('hinoTitulo').innerText = hinoAtual.titulo;
         mudarTom(hinoAtual.tomOriginal);
+        window.scrollTo(0,0);
     }
 
     function voltar() {
         stopScroll();
         document.getElementById('homeScreen').style.display = 'block';
         document.getElementById('hinoScreen').style.display = 'none';
-        document.getElementById('numInput').value = '';
+        clearKeys();
     }
 
     function mudarTom(notaEscolhida) {
-        // Pega apenas a nota base (ex: Am vira A)
         let notaBaseOriginal = hinoAtual.tomOriginal.replace(/m|dim|sus/g, '');
         let notaBaseEscolhida = notaEscolhida.replace(/m|dim|sus/g, '');
-        
         offsetAtual = notasEscala.indexOf(notaBaseEscolhida) - notasEscala.indexOf(notaBaseOriginal);
-        
         document.querySelectorAll('.tone-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById(`btn-tom-${notaEscolhida}`).classList.add('active');
+        const btn = document.getElementById(`btn-tom-${notaEscolhida}`);
+        if(btn) btn.classList.add('active');
         renderizarCifra();
     }
 
@@ -180,31 +258,29 @@
         document.getElementById('cifraRender').innerHTML = resultado;
     }
 
-    // LÓGICA DE ROLAGEM
+    function stepScroll() {
+        if (!isScrolling) return;
+        const speed = parseFloat(document.getElementById('scrollSpeed').value);
+        window.scrollBy(0, speed);
+        scrollAnimationFrame = requestAnimationFrame(stepScroll);
+    }
+
     function toggleScroll() {
         if (isScrolling) {
             stopScroll();
         } else {
-            startScroll();
+            isScrolling = true;
+            document.getElementById('scrollToggle').innerText = "STOP";
+            document.getElementById('scrollToggle').style.background = "var(--danger)";
+            stepScroll();
         }
-    }
-
-    function startScroll() {
-        isScrolling = true;
-        document.getElementById('scrollToggle').innerText = "STOP";
-        document.getElementById('scrollToggle').style.background = "#ff3b30";
-        
-        scrollInterval = setInterval(() => {
-            const speed = document.getElementById('scrollSpeed').value;
-            window.scrollBy(0, speed / 2);
-        }, 50);
     }
 
     function stopScroll() {
         isScrolling = false;
-        clearInterval(scrollInterval);
+        cancelAnimationFrame(scrollAnimationFrame);
         document.getElementById('scrollToggle').innerText = "PLAY";
-        document.getElementById('scrollToggle').style.background = "#007aff";
+        document.getElementById('scrollToggle').style.background = "var(--accent)";
     }
 </script>
 </body>

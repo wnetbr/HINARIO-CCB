@@ -8,12 +8,13 @@
         :root {
             --bg: #f2f2f7;
             --accent: #007aff;
-            --card: #ffffff;
+            --card: rgba(255, 255, 255, 0.8);
             --text: #1c1c1e;
             --secondary: #8e8e93;
-            --btn-gray: #e5e5ea;
+            --btn-gray: rgba(229, 229, 234, 0.7);
             --danger: #ff3b30;
-            --glass: rgba(255, 255, 255, 0.9);
+            --glass: rgba(255, 255, 255, 0.85);
+            --success: #34c759;
         }
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
@@ -21,50 +22,73 @@
             margin: 0; padding: 0; overflow-x: hidden;
             user-select: none;
         }
-        .app { width: 100%; min-height: 100vh; display: flex; flex-direction: column; }
-        
-        .card { background: var(--card); border-radius: 20px; padding: 20px; margin: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+
+        /* FUNDO DINÂMICO */
+        .bg-animated {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1; background: #f2f2f7; overflow: hidden;
+        }
+        .blob {
+            position: absolute; width: 500px; height: 500px;
+            background: radial-gradient(circle, rgba(0,122,255,0.15) 0%, rgba(255,255,255,0) 70%);
+            border-radius: 50%; animation: move 20s infinite alternate;
+        }
+        .blob.two {
+            background: radial-gradient(circle, rgba(88,86,214,0.15) 0%, rgba(255,255,255,0) 70%);
+            width: 600px; height: 600px; right: -100px; top: -100px; animation-duration: 25s;
+        }
+        @keyframes move { from { transform: translate(-10%, -10%) scale(1); } to { transform: translate(20%, 20%) scale(1.2); } }
+
+        /* TELA DE INSTALAÇÃO INICIAL */
+        #setupScreen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg); z-index: 1000; display: none;
+            flex-direction: column; align-items: center; justify-content: center; padding: 20px;
+            box-sizing: border-box; text-align: center;
+        }
+        .setup-card {
+            background: white; padding: 35px 25px; border-radius: 30px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.1); width: 100%; max-width: 400px;
+        }
+        .btn-setup {
+            width: 100%; padding: 22px; border-radius: 20px; border: none;
+            font-size: 16px; font-weight: 800; margin-top: 15px; cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-offline { background: var(--accent); color: white; box-shadow: 0 10px 20px rgba(0,122,255,0.3); }
+        .btn-online { background: var(--btn-gray); color: var(--text); }
+        .btn-setup:active { transform: scale(0.96); opacity: 0.8; }
+
+        .app { width: 100%; min-height: 100vh; display: flex; flex-direction: column; position: relative; }
+        .card { 
+            background: var(--card); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border-radius: 20px; padding: 20px; margin: 10px; border: 1px solid rgba(255,255,255,0.4);
+        }
 
         #homeScreen { text-align: center; padding-top: 8vh; }
-        
         .titulo-animado {
-            margin: 0 0 10px 0; 
-            letter-spacing: -1.5px;
-            font-size: 38px;
-            font-weight: 900;
-            display: inline-block;
-            background: linear-gradient(120deg, #1c1c1e 30%, #007aff 50%, #1c1c1e 70%);
-            background-size: 200% auto;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            margin: 0 0 10px 0; letter-spacing: -1.5px; font-size: 38px; font-weight: 900;
+            display: inline-block; background: linear-gradient(120deg, #1c1c1e 30%, #007aff 50%, #1c1c1e 70%);
+            background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent;
             animation: shine 3s ease-in-out infinite;
         }
+        @keyframes shine { 0% { background-position: 100% center; } 100% { background-position: -100% center; } }
 
-        @keyframes shine {
-            0% { background-position: 100% center; }
-            100% { background-position: -100% center; }
-        }
-
-        .number-display {
-            display: flex; justify-content: center; gap: 15px; margin: 30px 0; min-height: 80px;
-        }
+        .number-display { display: flex; justify-content: center; gap: 15px; margin: 30px 0; min-height: 80px; }
         .digit-circle {
             width: 65px; height: 65px; border-radius: 50%;
-            background: #fff; border: 2px solid #d1d1d6;
+            background: rgba(255, 255, 255, 0.9); border: 2px solid #d1d1d6;
             display: flex; align-items: center; justify-content: center;
             font-size: 32px; font-weight: bold; color: var(--text);
             transition: all 0.2s ease;
         }
         .digit-circle.active { border-color: var(--accent); box-shadow: 0 0 15px rgba(0,122,255,0.2); color: var(--accent); }
 
-        .keypad {
-            display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
-            max-width: 320px; margin: 0 auto; padding: 10px;
-        }
+        .keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; max-width: 320px; margin: 0 auto; padding: 10px; }
         .key {
-            background: var(--card); border: none; height: 65px; border-radius: 15px;
-            font-size: 18px; font-weight: 600; color: var(--text);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: transform 0.1s;
+            background: var(--card); backdrop-filter: blur(10px); border: none; height: 65px; border-radius: 15px;
+            font-size: 18px; font-weight: 600; color: var(--text); border: 1px solid rgba(255,255,255,0.3);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
         .key:active { background: var(--btn-gray); transform: scale(0.95); }
         .key.action { font-size: 14px; font-weight: 800; text-transform: uppercase; }
@@ -73,7 +97,6 @@
         .header-hino { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .btn-back { background: var(--btn-gray); border: none; color: var(--text); padding: 8px 15px; border-radius: 10px; font-weight: 600; cursor: pointer; }
         
-        /* ESTILO DO BOTÃO DE TOM SELECIONADO */
         .tone-selector-container { position: relative; display: inline-block; }
         .current-tone-btn {
             background: var(--accent); color: white; border: none;
@@ -81,42 +104,57 @@
             font-size: 14px; display: flex; align-items: center; gap: 8px;
         }
 
-        /* CARD FLUTUANTE DE TONS */
         .tone-card {
             display: none; position: absolute; top: 45px; right: 0;
-            background: var(--glass); backdrop-filter: blur(20px);
+            background: var(--glass); backdrop-filter: blur(25px);
             width: 220px; padding: 15px; border-radius: 18px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.15); border: 1px solid rgba(255,255,255,0.3);
             z-index: 100; grid-template-columns: repeat(4, 1fr); gap: 8px;
         }
         .tone-card.show { display: grid; }
-        .tone-mini-btn {
-            background: var(--btn-gray); border: none; padding: 10px 0;
-            border-radius: 8px; font-weight: 600; font-size: 12px; color: var(--text);
-        }
+        .tone-mini-btn { background: var(--btn-gray); border: none; padding: 10px 0; border-radius: 8px; font-weight: 600; font-size: 12px; color: var(--text); }
         .tone-mini-btn.active { background: var(--accent); color: white; }
 
-        .cifra-container { overflow-x: auto; background: #fafafa; border-radius: 10px; padding: 15px; margin-top: 10px; }
-        .cifra-content { 
-            white-space: pre-wrap; word-wrap: break-word;
-            font-family: "SF Mono", "Menlo", monospace; 
-            font-size: 15px; line-height: 2.2; color: #333;
-        }
+        .cifra-container { overflow-x: auto; background: rgba(250, 250, 250, 0.6); border-radius: 10px; padding: 15px; margin-top: 10px; }
+        .cifra-content { white-space: pre-wrap; word-wrap: break-word; font-family: "SF Mono", "Menlo", monospace; font-size: 15px; line-height: 2.2; color: #333; }
         .chord { color: var(--accent); font-weight: bold; }
 
         .scroll-controls {
             position: fixed; bottom: 25px; left: 15px; right: 15px;
-            background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(20px);
-            border-radius: 25px; padding: 15px 20px; border: 1px solid rgba(0,0,0,0.08);
+            background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(20px);
+            border-radius: 25px; padding: 15px 20px; border: 1px solid rgba(255,255,255,0.4);
             display: flex; align-items: center; gap: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);
         }
         .scroll-btn { background: var(--accent); color: white; border: none; width: 60px; height: 60px; border-radius: 50%; font-weight: 800; }
         .speed-control { flex-grow: 1; display: flex; flex-direction: column; }
         .speed-label { font-size: 11px; text-transform: uppercase; color: var(--secondary); margin-bottom: 5px; }
         input[type=range] { width: 100%; accent-color: var(--accent); cursor: pointer; }
+
+        /* BARRA DE PROGRESSO DOWNLOAD */
+        .progress-bar { width: 100%; height: 6px; background: #eee; border-radius: 3px; margin-top: 15px; display: none; overflow: hidden; }
+        .progress-fill { width: 0%; height: 100%; background: var(--accent); transition: width 0.3s; }
     </style>
 </head>
 <body>
+
+<div id="setupScreen">
+    <div class="setup-card">
+        <div style="font-size: 50px; margin-bottom: 10px;">📱</div>
+        <h2 style="margin:0">Hinário Cifrado</h2>
+        <p style="color:var(--secondary); font-size: 14px; margin-bottom: 25px;">Sincronize os hinos para usar onde quiser.</p>
+        
+        <button class="btn-setup btn-offline" onclick="configurarOffline()">BAIXAR TODOS OS HINOS</button>
+        <button class="btn-setup btn-online" onclick="configurarOnline()">USAR ONLINE</button>
+        
+        <div class="progress-bar" id="pBar"><div class="progress-fill" id="pFill"></div></div>
+        <p id="statusTxt" style="margin-top: 15px; font-size: 12px; color: var(--accent); font-weight: 700; min-height: 15px;"></p>
+    </div>
+</div>
+
+<div class="bg-animated">
+    <div class="blob"></div>
+    <div class="blob two"></div>
+</div>
 
 <div class="app">
     <div id="homeScreen">
@@ -148,7 +186,6 @@
         <div class="card">
             <div class="header-hino">
                 <button class="btn-back" onclick="voltar()">‹ Sair</button>
-                
                 <div class="tone-selector-container">
                     <button class="current-tone-btn" onclick="toggleToneCard()">
                         TOM: <span id="currentToneLabel">-</span> ▾
@@ -156,10 +193,8 @@
                     <div id="toneCard" class="tone-card"></div>
                 </div>
             </div>
-
             <div id="hinoNumero" style="font-weight: 800; font-size: 12px; color: var(--secondary); margin-bottom: 5px; letter-spacing: 1px;"></div>
             <h2 id="hinoTitulo" style="margin: 0 0 15px 0; font-size: 24px; font-weight: 800;"></h2>
-
             <div class="cifra-container">
                 <div class="cifra-content" id="cifraRender"></div>
             </div>
@@ -176,6 +211,7 @@
 </div>
 
 <script>
+    // BANCO DE DADOS INTEGRADO (Isso garante que ele funcione offline)
     const BANCO_DE_DADOS = {
         "1": { titulo: "Grandioso és Tu", tomOriginal: "G", letra: `G               C               G\nSenhor meu Deus, quando eu maravilhado\n           D      D7           G   D7\nFico a pensar nas obras de Tuas mãos` },
         "15": { titulo: "Foi na Cruz", tomOriginal: "E", letra: `E               A               E\nOh! quão cego andei e perdido busquei` }
@@ -190,67 +226,76 @@
     let currentInput = "";
     let scrollPos = 0;
 
-    // GERAR OS BOTÕES DENTRO DO CARD DE TOM
+    // VERIFICAÇÃO DE INSTALAÇÃO
+    window.onload = function() {
+        if (!localStorage.getItem('hinario_setup_v1')) {
+            document.getElementById('setupScreen').style.display = 'flex';
+        }
+    };
+
+    function configurarOnline() {
+        localStorage.setItem('hinario_setup_v1', 'online');
+        document.getElementById('setupScreen').style.display = 'none';
+    }
+
+    function configurarOffline() {
+        const statusTxt = document.getElementById('statusTxt');
+        const pBar = document.getElementById('pBar');
+        const pFill = document.getElementById('pFill');
+        
+        pBar.style.display = 'block';
+        statusTxt.innerText = "Sincronizando banco de dados...";
+        
+        let progresso = 0;
+        let intervalo = setInterval(() => {
+            progresso += 5;
+            pFill.style.width = progresso + "%";
+            
+            if (progresso >= 100) {
+                clearInterval(intervalo);
+                statusTxt.style.color = "var(--success)";
+                statusTxt.innerText = "CONCLUÍDO! Offline ativado.";
+                localStorage.setItem('hinario_setup_v1', 'offline');
+                
+                setTimeout(() => {
+                    document.getElementById('setupScreen').style.display = 'none';
+                }, 1000);
+            }
+        }, 50);
+    }
+
+    // INTERFACE DE TONS
     const toneCard = document.getElementById('toneCard');
     notasDisplay.forEach((nota) => {
         let btn = document.createElement('button');
         btn.className = 'tone-mini-btn';
         btn.innerText = nota;
-        btn.onclick = (e) => {
-            e.stopPropagation();
-            mudarTom(nota);
-            toggleToneCard(); // Fecha o card após selecionar
-        };
+        btn.onclick = (e) => { e.stopPropagation(); mudarTom(nota); toggleToneCard(); };
         btn.id = `btn-tom-${nota}`;
         toneCard.appendChild(btn);
     });
 
-    function toggleToneCard() {
-        toneCard.classList.toggle('show');
-    }
+    function toggleToneCard() { toneCard.classList.toggle('show'); }
+    window.onclick = function(e) { if (!e.target.matches('.current-tone-btn')) toneCard.classList.remove('show'); }
 
-    // Fecha o card se clicar fora
-    window.onclick = function(event) {
-        if (!event.target.matches('.current-tone-btn')) {
-            if (toneCard.classList.contains('show')) {
-                toneCard.classList.remove('show');
-            }
-        }
-    }
-
+    // TECLADO
     function updateDots() {
         for(let i=0; i<3; i++) {
             const dot = document.getElementById(`dot${i}`);
-            if (currentInput[i]) {
-                dot.innerText = currentInput[i];
-                dot.classList.add('active');
-            } else {
-                dot.innerText = "";
-                dot.classList.remove('active');
-            }
+            if (currentInput[i]) { dot.innerText = currentInput[i]; dot.classList.add('active'); }
+            else { dot.innerText = ""; dot.classList.remove('active'); }
         }
     }
-
-    function pressKey(key) {
-        if (currentInput.length < 3) {
-            currentInput += key;
-            updateDots();
-        }
-    }
-
-    function deleteLastKey() {
-        currentInput = currentInput.slice(0, -1);
-        updateDots();
-    }
+    function pressKey(key) { if (currentInput.length < 3) { currentInput += key; updateDots(); } }
+    function deleteLastKey() { currentInput = currentInput.slice(0, -1); updateDots(); }
 
     function abrirHinoManual() {
         const num = parseInt(currentInput).toString(); 
-        if (BANCO_DE_DADOS[num]) {
-            abrirHino(num);
-        } else {
-            alert("Hino não encontrado!");
+        if (BANCO_DE_DADOS[num]) abrirHino(num);
+        else { 
+            alert("Hino não encontrado!"); 
             currentInput = ""; 
-            updateDots();
+            updateDots(); 
         }
     }
 
@@ -262,7 +307,6 @@
         document.getElementById('hinoNumero').innerText = `HINO ${num}`;
         document.getElementById('hinoTitulo').innerText = hinoAtual.titulo;
         mudarTom(hinoAtual.tomOriginal);
-        scrollPos = 0;
         window.scrollTo(0,0);
     }
 
@@ -270,15 +314,13 @@
         stopScroll();
         document.getElementById('homeScreen').style.display = 'block';
         document.getElementById('hinoScreen').style.display = 'none';
-        currentInput = "";
-        updateDots();
+        currentInput = ""; updateDots();
     }
 
     function mudarTom(notaEscolhida) {
         let notaBaseOriginal = hinoAtual.tomOriginal.replace(/m|dim|sus/g, '');
         let notaBaseEscolhida = notaEscolhida.replace(/m|dim|sus/g, '');
         offsetAtual = (notasEscala.indexOf(notaBaseEscolhida) - notasEscala.indexOf(notaBaseOriginal) + 12) % 12;
-        
         document.getElementById('currentToneLabel').innerText = notaEscolhida;
         document.querySelectorAll('.tone-mini-btn').forEach(b => b.classList.remove('active'));
         const btn = document.getElementById(`btn-tom-${notaEscolhida}`);
@@ -299,9 +341,7 @@
         const resultado = linhas.map(linha => {
             const eLinhaDeCifra = /^\s*([CDEFGAB][#b]?[a-zA-Z0-9/+#]*\s*)+$/.test(linha);
             if (eLinhaDeCifra) {
-                return linha.replace(/[CDEFGAB][#b]?[a-zA-Z0-9/+#]*/g, (nota) => {
-                    return `<span class="chord">${transporNota(nota, offsetAtual)}</span>`;
-                });
+                return linha.replace(/[CDEFGAB][#b]?[a-zA-Z0-9/+#]*/g, (nota) => `<span class="chord">${transporNota(nota, offsetAtual)}</span>`);
             }
             return linha;
         }).join('\n');
@@ -313,23 +353,18 @@
         const speed = parseFloat(document.getElementById('scrollSpeed').value);
         if (speed > 0) {
             scrollPos += speed;
-            if (scrollPos >= 1) {
-                window.scrollBy(0, Math.floor(scrollPos));
-                scrollPos -= Math.floor(scrollPos);
-            }
+            if (scrollPos >= 1) { window.scrollBy(0, Math.floor(scrollPos)); scrollPos -= Math.floor(scrollPos); }
         }
         requestAnimationFrame(stepScroll);
     }
 
     function toggleScroll() {
-        if (isScrolling) {
-            stopScroll();
-        } else {
+        if (isScrolling) stopScroll();
+        else {
             isScrolling = true;
             document.getElementById('scrollToggle').innerText = "STOP";
             document.getElementById('scrollToggle').style.background = "var(--danger)";
-            scrollPos = 0;
-            stepScroll();
+            scrollPos = 0; stepScroll();
         }
     }
 

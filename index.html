@@ -1,6 +1,137 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
+<!DOCTYPE html><html><head><style>:root {
+    --bg: #f4f4f9;
+    --accent: #007aff;
+    --card: rgba(255, 255, 255, 0.75);
+    --text: #1c1c1e;
+    --secondary: #8e8e93;
+    --btn-gray: rgba(229, 229, 234, 0.6);
+    --danger: #ff3b30;
+    --glass: rgba(255, 255, 255, 0.8);
+    --border-glass: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+/* Reset de bordas e largura para Mobile */
+* {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body { 
+    font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+    background: var(--bg); 
+    color: var(--text); 
+    margin: 0; 
+    padding: 0; 
+    overflow-x: hidden; /* Trava o balanço lateral do site */
+    width: 100vw;
+}
+
+.bg-animated {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    z-index: -1; background: linear-gradient(160deg, #f4f4f9 0%, #e0e0e7 100%);
+}
+
+/* CORREÇÃO DO TÍTULO E BUG DA LETRA 'O' */
+.titulo-animado {
+    margin: 20px auto;
+    font-size: clamp(32px, 10vw, 52px); /* Tamanho dinâmico */
+    font-weight: 900;
+    letter-spacing: -1px; /* Resolvido: Espaçamento -4px bugava o 'O' no mobile */
+    text-transform: uppercase;
+    text-align: center;
+    display: block;
+    width: 90%;
+    background: linear-gradient(135deg, #27ae60 0%, #007aff 50%, #48484a 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-size: 200% auto;
+    animation: metalShine 8s ease infinite;
+    /* Adicionado padding para a sombra não cortar a letra */
+    padding: 5px;
+    filter: drop-shadow(0 4px 10px rgba(0, 122, 255, 0.1));
+}
+
+@keyframes metalShine {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* AJUSTE DAS BORDAS E CARDS */
+.card { 
+    background: var(--card); 
+    backdrop-filter: blur(25px); 
+    -webkit-backdrop-filter: blur(25px);
+    border-radius: 24px; 
+    padding: 20px; 
+    margin: 15px auto; 
+    width: 92%; /* Centralizado com margens perfeitas */
+    max-width: 500px;
+    border: var(--border-glass);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+}
+
+/* CORREÇÃO DA CIFRA QUE PASSA DA TELA */
+.cifra-container { 
+    width: 100%;
+    overflow-x: auto; /* Scroll apenas dentro da cifra */
+    background: rgba(255, 255, 255, 0.4); 
+    border-radius: 16px; 
+    padding: 15px; 
+    border: 1px solid rgba(255,255,255,0.2); 
+    -webkit-overflow-scrolling: touch;
+}
+
+.cifra-content { 
+    white-space: pre; 
+    font-family: "SF Mono", "Menlo", "Courier New", monospace; 
+    font-size: 14px; 
+    line-height: 1.6; 
+    color: #1c1c1e; 
+    margin: 0;
+}
+
+.chord { color: var(--accent); font-weight: 800; }
+
+/* TECLADO ADAPTADO */
+.keypad { 
+    display: grid; 
+    grid-template-columns: repeat(3, 1fr); 
+    gap: 12px; 
+    width: 92%; 
+    max-width: 340px; 
+    margin: 0 auto; 
+}
+
+.key {
+    background: rgba(255, 255, 255, 0.9); 
+    border: none; 
+    height: 65px; 
+    border-radius: 18px;
+    font-size: 24px; 
+    font-weight: 600; 
+    color: var(--text); 
+    border-bottom: 3px solid #d1d1d6;
+}
+
+/* CONTROLES FLUTUANTES */
+.scroll-controls {
+    position: fixed; 
+    bottom: calc(20px + env(safe-area-inset-bottom)); 
+    left: 4%; 
+    right: 4%;
+    background: rgba(255, 255, 255, 0.82); 
+    backdrop-filter: blur(30px);
+    border-radius: 25px; 
+    padding: 15px 20px; 
+    border: var(--border-glass);
+    display: flex; 
+    align-items: center; 
+    gap: 15px; 
+    z-index: 1000;
+}</style></head><body>
+
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Hinário Cifrado</title>
@@ -22,6 +153,8 @@
             background: var(--bg); color: var(--text); 
             margin: 0; padding: 0; overflow-x: hidden;
             user-select: none; -webkit-tap-highlight-color: transparent;
+            /* Suaviza o scroll no iOS */
+            -webkit-overflow-scrolling: touch;
         }
 
         .bg-animated {
@@ -31,7 +164,8 @@
 
         .titulo-animado {
             margin: 0 0 15px 0;
-            font-size: 58px;
+            font-size: 14vw; /* Tamanho adaptável à largura da tela */
+            max-size: 58px;
             font-weight: 950;
             letter-spacing: -4px;
             text-transform: uppercase;
@@ -52,7 +186,9 @@
 
         /* --- MENU TRÊS BARRINHAS --- */
         .menu-icon {
-            position: fixed; top: 25px; right: 20px; z-index: 1100;
+            position: fixed; 
+            top: calc(15px + env(safe-area-inset-top)); /* Respeita o entalhe/notch */
+            right: 20px; z-index: 1100;
             width: 30px; height: 22px;
             display: flex; flex-direction: column; justify-content: space-between;
             cursor: pointer; padding: 10px;
@@ -67,11 +203,13 @@
             position: fixed; top: 0; right: -100%; width: 100%; height: 100%;
             background: rgba(242, 242, 247, 0.98); backdrop-filter: blur(20px);
             z-index: 1200; transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            display: flex; flex-direction: column; padding: 60px 20px 20px; box-sizing: border-box;
+            display: flex; flex-direction: column; 
+            padding: calc(60px + env(safe-area-inset-top)) 20px 20px; 
+            box-sizing: border-box;
         }
         #sideMenu.active { right: 0; }
 
-        .menu-close { position: absolute; top: 25px; right: 20px; font-weight: 800; color: var(--accent); border: none; background: none; font-size: 16px; }
+        .menu-close { position: absolute; top: calc(25px + env(safe-area-inset-top)); right: 20px; font-weight: 800; color: var(--accent); border: none; background: none; font-size: 16px; }
 
         .menu-tab {
             background: white; padding: 18px; border-radius: 15px; margin-bottom: 12px;
@@ -113,39 +251,50 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.03); box-sizing: border-box;
         }
 
-        #homeScreen { text-align: center; padding-top: 6vh; width: 100%; box-sizing: border-box; }
+        #homeScreen { 
+            text-align: center; 
+            padding-top: calc(6vh + env(safe-area-inset-top)); 
+            width: 100%; 
+            box-sizing: border-box; 
+        }
 
-        .number-display { display: flex; justify-content: center; gap: 18px; margin: 40px 0; min-height: 80px; }
+        .number-display { display: flex; justify-content: center; gap: 4vw; margin: 30px 0; min-height: 80px; }
         .digit-circle {
-            width: 70px; height: 70px; border-radius: 22px;
+            width: 18vw; height: 18vw; max-width: 70px; max-height: 70px; border-radius: 22px;
             background: #ffffff; border: 1.5px solid #d1d1d6;
             display: flex; align-items: center; justify-content: center;
-            font-size: 38px; font-weight: 800; color: var(--text);
+            font-size: 8vw; /* Fonte responsiva */
+            font-weight: 800; color: var(--text);
             transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
+        @media(min-width: 400px) { .digit-circle { font-size: 38px; } }
         .digit-circle.active { border-color: var(--accent); transform: scale(1.1); color: var(--accent); }
 
-        .keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; max-width: 340px; margin: 0 auto; padding: 10px; box-sizing: border-box; }
+        .keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; width: 100%; max-width: 340px; margin: 0 auto; padding: 15px; box-sizing: border-box; }
         .key {
-            background: rgba(255, 255, 255, 0.9); border: none; height: 70px; border-radius: 20px;
+            background: rgba(255, 255, 255, 0.9); border: none; height: 16vw; max-height: 70px; border-radius: 20px;
             font-size: 24px; font-weight: 600; color: var(--text); border-bottom: 3px solid #d1d1d6;
         }
-        .key:active { transform: translateY(2px); border-bottom-width: 1px; }
-        .key.action { font-size: 13px; font-weight: 800; text-transform: uppercase; }
+        .key:active { transform: translateY(2px); border-bottom-width: 1px; background: #eee; }
+        .key.action { font-size: 11px; font-weight: 800; text-transform: uppercase; }
 
-        #hinoScreen { display: none; padding-bottom: 160px; }
+        #hinoScreen { 
+            display: none; 
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: calc(160px + env(safe-area-inset-bottom)); 
+        }
         .header-hino { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
         .btn-back { background: var(--btn-gray); border: none; color: var(--text); padding: 10px 18px; border-radius: 12px; font-weight: 700; font-size: 14px; }
         
         .current-tone-btn {
             background: var(--accent); color: white; border: none;
-            padding: 10px 20px; border-radius: 12px; font-weight: 700; font-size: 14px;
+            padding: 10px 15px; border-radius: 12px; font-weight: 700; font-size: 13px;
         }
 
         .tone-card {
             display: none; position: absolute; top: 48px; right: 0;
             background: var(--glass); backdrop-filter: blur(30px);
-            width: 220px; padding: 15px; border-radius: 20px;
+            width: 260px; padding: 15px; border-radius: 20px;
             box-shadow: 0 15px 40px rgba(0,0,0,0.12); border: var(--border-glass);
             z-index: 100; grid-template-columns: repeat(4, 1fr); gap: 8px;
         }
@@ -154,41 +303,46 @@
         .tone-mini-btn { background: var(--btn-gray); border: none; padding: 12px 0; border-radius: 10px; font-weight: 700; font-size: 12px; }
         .tone-mini-btn.active { background: var(--accent) !important; color: white !important; }
 
-        /* AJUSTE PARA CIFRA IDENTICA */
         .cifra-container { 
             overflow-x: auto; 
             background: rgba(255, 255, 255, 0.5); 
             border-radius: 18px; 
-            padding: 20px; 
+            padding: 15px; 
             border: 1px solid rgba(255,255,255,0.3); 
             box-sizing: border-box; 
         }
         .cifra-content { 
-            white-space: pre; /* MANTÉM ESPAÇOS E QUEBRAS EXATOS */
+            white-space: pre; 
             font-family: "SF Mono", "Menlo", "Courier New", monospace; 
-            font-size: 15px; 
-            line-height: 1.5; 
+            font-size: 14px; 
+            line-height: 1.6; 
             color: #2c2c2e; 
             margin: 0;
         }
         .chord { color: var(--accent); font-weight: 800; }
 
         .scroll-controls {
-            position: fixed; bottom: 30px; left: 20px; right: 20px;
+            position: fixed; 
+            bottom: calc(20px + env(safe-area-inset-bottom)); 
+            left: 15px; right: 15px;
             background: rgba(255, 255, 255, 0.82); backdrop-filter: blur(30px);
-            border-radius: 30px; padding: 20px; border: var(--border-glass);
-            display: flex; align-items: center; gap: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.12);
+            border-radius: 30px; padding: 15px; border: var(--border-glass);
+            display: flex; align-items: center; gap: 15px; box-shadow: 0 20px 50px rgba(0,0,0,0.12);
             box-sizing: border-box; z-index: 90;
         }
-        .scroll-btn { background: var(--accent); color: white; border: none; width: 55px; height: 55px; border-radius: 50%; font-weight: 900; }
+        .scroll-btn { 
+            background: var(--accent); color: white; border: none; 
+            width: 50px; height: 50px; border-radius: 50%; font-weight: 900;
+            font-size: 10px; flex-shrink: 0;
+        }
         
         input[type=range] { flex-grow: 1; accent-color: var(--accent); }
 
         .progress-bar { width: 100%; height: 8px; background: #e5e5ea; border-radius: 10px; margin-top: 20px; display: none; overflow: hidden; }
         .progress-fill { width: 0%; height: 100%; background: var(--accent); border-radius: 10px; }
     </style>
-</head>
-<body>
+
+
 
 <div id="mainMenuBtn" class="menu-icon" onclick="toggleMenu()">
     <span></span>
@@ -202,7 +356,7 @@
     
     <div id="menuOptions">
         <div class="menu-tab" onclick="configurarOffline()">
-            <span>📥</span> SICRONIZAR HINOS OFFLINE
+            <span>📥</span> SINCRONIZAR HINOS OFFLINE
         </div>
 
         <div class="menu-tab" onclick="abrirDev()">
@@ -221,7 +375,7 @@
         <h2 style="margin:0; font-weight: 800; letter-spacing: -1px;">HINÁRIO CIFRADO</h2>
         <p id="setupMsg" style="color:var(--secondary); font-size: 15px; margin-bottom: 30px; line-height: 1.5;">Prepare sua biblioteca para tocar offline.</p>
         <div id="setupButtons">
-            <button class="btn-setup btn-offline" onclick="configurarOffline()">SICRONIZAR HINOS OFFLINE</button>
+            <button class="btn-setup btn-offline" onclick="configurarOffline()">SINCRONIZAR HINOS OFFLINE</button>
             <button class="btn-setup btn-online" onclick="configurarOnline()">USAR ONLINE</button>
         </div>
         <div class="progress-bar" id="pBarSetup"><div class="progress-fill" id="pFillSetup"></div></div>
@@ -258,31 +412,35 @@
     <div id="hinoScreen">
         <div class="card">
             <div class="header-hino">
-                <button class="btn-back" onclick="voltar()">‹ FECHAR</button>
+                <button class="btn-back" onclick="voltar()">‹ VOLTAR</button>
                 <div style="position: relative;">
                     <button class="current-tone-btn" onclick="toggleToneCard()">TOM: <span id="currentToneLabel">-</span> ▾</button>
                     <div id="toneCard" class="tone-card"></div>
                 </div>
             </div>
             <div id="hinoNumero" style="font-weight: 700; font-size: 13px; color: var(--accent); margin-bottom: 5px; opacity: 0.8;"></div>
-            <h2 id="hinoTitulo" style="margin: 0 0 18px 0; font-size: 28px; font-weight: 900; letter-spacing: -1px;"></h2>
+            <h2 id="hinoTitulo" style="margin: 0 0 18px 0; font-size: 24px; font-weight: 900; letter-spacing: -1px;"></h2>
             <div class="cifra-container"><pre class="cifra-content" id="cifraRender"></pre></div>
         </div>
         <div class="scroll-controls">
             <button id="scrollToggle" class="scroll-btn" onclick="toggleScroll()">INICIAR</button>
-            <input type="range" id="scrollSpeed" min="0" max="3" step="0.001" value="0.2">
+            <div style="display: flex; flex-direction: column; flex-grow: 1;">
+                <span style="font-size: 9px; font-weight: 800; color: var(--secondary); text-transform: uppercase; margin-bottom: 5px;">Velocidade</span>
+                <input type="range" id="scrollSpeed" min="0" max="3" step="0.001" value="0.2">
+            </div>
         </div>
     </div>
 </div>
 
 <script>
+    // MANTIDA TODA A LÓGICA ORIGINAL DO JAVASCRIPT
     const BANCO_DE_DADOS = {
         "1": { 
             titulo: "CRISTO MEU MESTRE", 
             tomOriginal: "G", 
             letra: `G          D     C        G
 Cristo, meu mestre e meu Senhor
- C       G     A7          D
+ C       G     A7        D
 Eu Te adoro, por fé, com fervor
 G        D      C      D
 Rogo que guardes meu coração
@@ -313,7 +471,7 @@ Santo e puro, na graça, meu ser
  C       G Em        D  G
 Sempre seguro, com fé e poder
 
-G         D    C      G
+G         D    C       G
 Mestre piedoso, com Tua mão
  C     G       A7      D
 Faze perfeito o meu coração
@@ -323,9 +481,134 @@ G  C     G        D        G
 Sempre voltado aos bens do porvir
 C     G Em      D       G
 Mestre amado, desejo Te ouvir` 
-        }
-        // ... adicione os outros aqui seguindo o mesmo padrão de espaços
-    };
+        },
+        "2": { 
+            titulo: "NOME DO HINO", 
+            tomOriginal: "G", 
+            letra: `G               D      C      D    G
+De Deus tu es eleita, igreja de Jesus
+ Em            C       Am    G     D
+O teu divino Mestre á gloria te conduz
+G               C D     C          Am D7
+Prepara te pois Ele mui breve voltará
+Em                C        Am     D7   G
+A gloria que te espera já preparada esta
+
+ G               D      C        D      G
+Com celestiais adornos espera o teu senhor
+Em            C       Am    G     D
+Vestida de justiça e do divino amor
+G               C D    C          Am D7
+Dileta és de Cristo que vida te doou
+Em            C          Am       D7   G
+A fim de resgatar-te seu sangue derramou
+
+G             D      C       D     G
+É grande tua glória, igreja de Jesus
+Em            C       Am       G     D
+Consagra-te a Ele, andando em sua luz
+G               C D    C             Am D7
+Em breve no seu reino, gloriosa entrarás
+Em            C         Am      D7    G
+E a face do Esposo, no céu contemplaras` 
+        },
+        "3": { 
+            titulo: "NOME DO HINO", 
+            tomOriginal: "G", 
+            letra: `G        Em        C         G
+Faz-nos ouvir Tua voz gloriosa
+C       G/B      D7         G
+Ó nosso Mestre, fiel redentor
+        Em         C       G
+A Tua Igre..ja, dileta esposa
+C         G/B    D7      G
+Sente por Ti inefável amor
+
+D7            G    Am/G    G
+Ó caro Salvador, a Tua voz de amor
+C          G          Am/G      B7
+Nos guia para o céu, glorioso lar
+ C      G        D7         G
+Pela palavra vem nos consolar
+
+G       Em          C          G
+Ó Jesus Cris..to, celeste esposo
+C       G/B           D7            G
+Vem conduzir-nos, por Teu grande amor
+         Em     C           G
+Já antevemos, ó rei majestoso
+C         G/B       D7        G
+A glória eterna do Teu esplendor
+
+D7            G    Am/G    G
+Ó caro Salvador, a Tua voz de amor
+C          G          Am/G      B7
+Nos guia para o céu, glorioso lar
+ C      G        D7         G
+Pela palavra vem nos consolar
+
+G         Em      C            G
+A Tua igre..ja está se adornando
+C          G/B       D7          G
+Para encontrar-se Contigo, ó Jesus
+            Em      C           G
+Com santas vestes, está aguardando
+C        G/B     D7        G
+Ver Tua face no reino de luz
+
+D7            G    Am/G    G
+Ó caro Salvador, a Tua voz de amor
+C          G          Am/G      B7
+Nos guia para o céu, glorioso lar
+ C      G        D7         G
+Pela palavra vem nos consolar` 
+        },
+        "4": { 
+            titulo: "NOME DO HINO", 
+            tomOriginal: "G", 
+            letra: `CIFRA` 
+        },
+        "5": { 
+            titulo: "NOME DO HINO", 
+            tomOriginal: "G", 
+            letra: `CIFRA` 
+        },
+        "6": { 
+            titulo: "NOME DO HINO", 
+            tomOriginal: "G", 
+            letra: `CIFRA` 
+        },
+        "7": { 
+            titulo: "NOME DO HINO", 
+            tomOriginal: "G", 
+            letra: `CIFRA` 
+        },
+        "8": { 
+            titulo: "NOME DO HINO", 
+            tomOriginal: "G", 
+            letra: `CIFRA` 
+        },
+        "9": { 
+            titulo: "NOME DO HINO", 
+            tomOriginal: "G", 
+            letra: `CIFRA` 
+        },
+        "10": { 
+            titulo: "NOME DO HINO", 
+            tomOriginal: "G", 
+            letra: `CIFRA` 
+        },
+        "11": { 
+            titulo: "NOME DO HINO", 
+            tomOriginal: "G", 
+            letra: `CIFRA` 
+        },
+        "12": { 
+            titulo: "NOME DO HINO", 
+            tomOriginal: "G", 
+            letra: `CIFRA` 
+        },
+            };
 
     const notasDisplay = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B", "Cm", "C#m", "Dm", "D#m", "Em", "Fm", "F#m", "Gm", "G#m", "Am", "A#m", "Bm"];
     const notasEscala = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
@@ -439,7 +722,6 @@ Mestre amado, desejo Te ouvir`
     function renderizarCifra() {
         const lines = hinoAtual.letra.split('\n');
         const res = lines.map(l => {
-            // Regex melhorado para identificar acordes e manter o espaçamento
             if (/^(\s*[CDEFGAB][#b]?[a-zA-Z0-9/+#]*\s*)+$/.test(l)) {
                 return l.replace(/[CDEFGAB][#b]?[a-zA-Z0-9/+#]*/g, m => {
                     const transposto = m.replace(/[CDEFGAB][#b]?/g, x => {
@@ -469,5 +751,5 @@ Mestre amado, desejo Te ouvir`
     }
     function stopScroll() { isScrolling = false; document.getElementById('scrollToggle').innerText="INICIAR"; document.getElementById('scrollToggle').style.background="var(--accent)"; }
 </script>
-</body>
-</html>
+
+<script></script><script></script></body></html>
